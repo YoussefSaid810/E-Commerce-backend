@@ -1,0 +1,38 @@
+## Ignore build directories
+bin/
+obj/
+
+## Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Visual Studio Code
+.vscode/
+
+## Rider / IntelliJ
+.idea/
+
+## Logs
+*.log
+
+## OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+## Node (if frontend included later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+## Environment & secrets
+.env
+*.env.local
+
+## ASP.NET Core
+appsettings.Developm
