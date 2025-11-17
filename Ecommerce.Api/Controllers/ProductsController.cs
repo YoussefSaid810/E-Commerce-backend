@@ -75,7 +75,7 @@ public class ProductsController : ControllerBase
 
     // POST api/products
     [HttpPost]
-    //[Authorize(Roles = "Admin")] // remove or change if not using roles
+    [Authorize(Roles = "Admin")] // remove or change if not using roles
     public async Task<IActionResult> Create([FromBody] ProductCreateDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -121,7 +121,7 @@ public class ProductsController : ControllerBase
 
     // PUT api/products/{id}
     [HttpPut("{id:guid}")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(Guid id, [FromBody] ProductUpdateDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -160,7 +160,7 @@ public class ProductsController : ControllerBase
 
     // DELETE api/products/{id}
     [HttpDelete("{id:guid}")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var product = await _db.Products!.FirstOrDefaultAsync(p => p.ProductId == id);
