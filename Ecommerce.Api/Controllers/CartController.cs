@@ -94,6 +94,7 @@ namespace Ecommerce.Api.Controllers
                     UnitPrice = unitPrice,
                     AddedAt = DateTime.UtcNow
                 };
+                item.ProductName = (await _db.Products.FindAsync(req.ProductId))?.Name;
                 _db.CartItems.Add(item);
             }
 

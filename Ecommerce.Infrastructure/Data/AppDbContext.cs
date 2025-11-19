@@ -19,6 +19,9 @@ namespace Ecommerce.Infrastructure.Data
         public DbSet<ProductImage> ProductImages { get; set; } = null!;
         public DbSet<Cart> Carts { get; set; } = null!;
         public DbSet<CartItem> CartItems { get; set; } = null!;
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+
 
 
 
@@ -71,6 +74,24 @@ namespace Ecommerce.Infrastructure.Data
             builder.Entity<CartItem>()
                 .Property(ci => ci.UnitPrice)
                 .HasPrecision(18, 2);
+
+            builder.Entity<Order>(b =>
+            {
+                b.HasKey(o => o.OrderId);
+                b.Property(o => o.Total).HasPrecision(18, 2);
+                b.Property(o => o.Currency).HasMaxLength(10);
+                b.HasMany(o => o.Items)
+                 .WithOne(i => i.Order)
+                 .HasForeignKey(i => i.OrderId);
+            });
+
+            builder.Entity<OrderItem>(b =>
+            {
+                b.HasKey(i => i.OrderItemId);
+                b.Property(i => i.UnitPrice).HasPrecision(18, 2);
+                b.Property(i => i.LineTotal).HasPrecision(18, 2);
+            });
+
 
 
         }
