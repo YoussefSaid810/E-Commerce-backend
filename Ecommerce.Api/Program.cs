@@ -4,8 +4,8 @@ using Ecommerce.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);

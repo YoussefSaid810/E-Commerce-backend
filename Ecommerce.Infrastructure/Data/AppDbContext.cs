@@ -17,6 +17,9 @@ namespace Ecommerce.Infrastructure.Data
         public DbSet<Product> Products { get; set; } = null!;
         public DbSet<Category> Categories { get; set; } = null!;
         public DbSet<ProductImage> ProductImages { get; set; } = null!;
+        public DbSet<Cart> Carts { get; set; } = null!;
+        public DbSet<CartItem> CartItems { get; set; } = null!;
+
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -58,6 +61,17 @@ namespace Ecommerce.Infrastructure.Data
                 .HasKey(pi => pi.ProductImageId);
             builder.Entity<ProductImage>()
                 .HasIndex(pi => new { pi.ProductId, pi.IsPrimary });
+
+            builder.Entity<Cart>().HasKey(c => c.CartId);
+            builder.Entity<Cart>().HasIndex(c => c.UserId).IsUnique(true); // one cart per user
+
+            builder.Entity<CartItem>().HasKey(ci => ci.CartItemId);
+            builder.Entity<CartItem>().HasIndex(ci => new { ci.CartId, ci.ProductId}).IsUnique(false);
+
+            builder.Entity<CartItem>()
+                .Property(ci => ci.UnitPrice)
+                .HasPrecision(18, 2);
+
 
         }
 

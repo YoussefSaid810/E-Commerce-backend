@@ -1,4 +1,4 @@
-﻿using Ecommerce.Core.DTO;
+﻿using Ecommerce.Application.DTO.Product;
 using Ecommerce.Core.Models; // or correct namespace for Product
 using Ecommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;

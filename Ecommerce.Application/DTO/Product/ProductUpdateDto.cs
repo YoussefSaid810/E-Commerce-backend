@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Core.DTO
+namespace Ecommerce.Application.DTO.Product
 {
     public class ProductUpdateDto
     {
