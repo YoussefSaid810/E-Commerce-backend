@@ -122,8 +122,21 @@ namespace Ecommerce.Infrastructure.Data
                     CategoryId = cat3.CategoryId,
                     CreatedAt = DateTime.UtcNow
                 };
-
-                await _db.Products.AddRangeAsync(p1, p2, p3);
+                var p4 = new Product
+                {
+                    Name = "C# In Depth (5th Edition)",
+                    Description = "Programming book for C# developers.",
+                    ShortDescription = "C# book",
+                    Slug = "csharp-in-depth",
+                    Price = 59.50m,
+                    Currency = "EGP",
+                    Stock = 20,
+                    StockTracked = true,
+                    IsActive = true,
+                    CategoryId = cat3.CategoryId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _db.Products.AddRangeAsync(p1, p2, p3 , p4);
                 await _db.SaveChangesAsync();
             }
         }

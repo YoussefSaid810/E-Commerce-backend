@@ -93,7 +93,24 @@ namespace Ecommerce.Infrastructure.Data
             });
 
 
+            // Name / Slug index for faster lookup by slug or name
+            builder.Entity<Product>()
+                .HasIndex(p => p.Name)
+                .HasDatabaseName("IX_Products_Name");
 
+            builder.Entity<Product>()
+                .HasIndex(p => p.Slug)
+                .HasDatabaseName("IX_Products_Slug");
+
+            // Price index for range queries
+            builder.Entity<Product>()
+                .HasIndex(p => p.Price)
+                .HasDatabaseName("IX_Products_Price");
+
+            // CreatedAt index for sorting by newest/oldest
+            builder.Entity<Product>()
+                .HasIndex(p => p.CreatedAt)
+                .HasDatabaseName("IX_Products_CreatedAt");
         }
 
     }

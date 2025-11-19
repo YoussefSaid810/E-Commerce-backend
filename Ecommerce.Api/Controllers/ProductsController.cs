@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Mime;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -177,4 +180,128 @@ public class ProductsController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
+
+    /// <summary>
+    /// Search and list products with filters, paging and sort.
+    /// Query params:
+    /// - q (string) : fulltext-ish search on name + description
+    /// - category (string) : category id or slug
+    /// - minPrice (decimal)
+    /// - maxPrice (decimal)
+    /// - sort (string) : price_asc | price_desc | newest | oldest | name_asc | name_desc
+    /// - page (int) page number (1)
+    /// - pageSize (int) page size (20)
+    /// </summary>
+    [HttpGet("search")]
+    public async Task<IActionResult> Search(
+    [FromQuery] string? q = null,
+    [FromQuery] string? category = null,
+    [FromQuery] decimal? minPrice = null,
+    [FromQuery] decimal? maxPrice = null,
+    [FromQuery] string? sort = "newest",
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1 || pageSize > 200) pageSize = 20;
+
+        // base query
+        var products = _db.Products.AsQueryable();
+
+        // only active products by default
+        products = products.Where(p => p.IsActive);
+
+        // category filter (slug or id) — we try to detect the category and filter by its real id
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            // try numeric id
+            if (int.TryParse(category, out var catInt))
+            {
+                products = products.Where(p => EF.Property<int>(p, "CategoryId") == catInt);
+            }
+            else if (Guid.TryParse(category, out var catGuid))
+            {
+                products = products.Where(p => EF.Property<Guid>(p, "CategoryId") == catGuid);
+            }
+            else
+            {
+                // treat as slug or name: lookup category first, then filter by the category's id
+                var cat = await _db.Categories.AsNoTracking()
+                             .FirstOrDefaultAsync(c => c.Slug == category || c.Name == category);
+                if (cat == null)
+                {
+                    return Ok(new ProductSearchResultDto { Total = 0, Page = page, PageSize = pageSize });
+                }
+
+                // determine the category Id property and filter accordingly
+                var catIdValue = cat.GetType().GetProperty("Id")?.GetValue(cat);
+                if (catIdValue is int intVal)
+                    products = products.Where(p => EF.Property<int>(p, "CategoryId") == intVal);
+                else if (catIdValue is Guid gVal)
+                    products = products.Where(p => EF.Property<Guid>(p, "CategoryId") == gVal);
+                else
+                    products = products.Where(p => EF.Property<string>(p, "CategoryId") == catIdValue.ToString());
+            }
+        }
+
+        // text search (case-insensitive using ToLower + LIKE)
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var lowered = q.Trim().ToLower();
+            products = products.Where(p =>
+                (p.Name != null && EF.Functions.Like(p.Name.ToLower(), $"%{lowered}%")) ||
+                (p.Description != null && EF.Functions.Like(p.Description.ToLower(), $"%{lowered}%")) ||
+                (p.ShortDescription != null && EF.Functions.Like(p.ShortDescription.ToLower(), $"%{lowered}%"))
+            );
+        }
+
+        // price range
+        if (minPrice.HasValue) products = products.Where(p => p.Price >= minPrice.Value);
+        if (maxPrice.HasValue) products = products.Where(p => p.Price <= maxPrice.Value);
+
+        // sorting
+        products = sort?.ToLower() switch
+        {
+            "price_asc" => products.OrderBy(p => p.Price),
+            "price_desc" => products.OrderByDescending(p => p.Price),
+            "name_asc" => products.OrderBy(p => p.Name),
+            "name_desc" => products.OrderByDescending(p => p.Name),
+            "oldest" => products.OrderBy(p => p.CreatedAt),
+            _ => products.OrderByDescending(p => p.CreatedAt),
+        };
+
+        var total = await products.LongCountAsync();
+
+        var list = await products
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new ProductListItemDto
+            {
+                // If your Product uses another primary key name (ProductId etc) replace p.Id with that property.
+                Id = p.ProductId.ToString(),
+                Name = p.Name,
+                ShortDescription = p.ShortDescription,
+                Slug = p.Slug,
+                Price = p.Price,
+                Currency = p.Currency,
+                Stock = p.StockTracked ? (int?)p.Stock : null,
+                StockTracked = p.StockTracked,
+                IsActive = p.IsActive,
+                Category = null, // no nav property available
+                CreatedAt = p.CreatedAt
+            })
+            .ToListAsync();
+
+        var result = new ProductSearchResultDto
+        {
+            Total = total,
+            Page = page,
+            PageSize = pageSize,
+            Items = list
+        };
+
+        return Ok(result);
+    }
+
 }
