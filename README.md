@@ -47,10 +47,8 @@ EcommerceSolution/
 │   │   ├── Cart/
 │   │   ├── Category/
 │   │   ├── Product/
-│   │   ├── Orders/
-│   ├── Validators/   (optional but recommended)
-│   └── (No Services, since you chose controller-level logic)
-│
+│   └── ├── Orders/
+│   
 ├── Ecommerce.Core/
 │   ├── Identity/
 │   │   ├── ApplicationUser.cs
