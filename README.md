@@ -20,7 +20,7 @@ A clean and modular **Ecommerce Backend API** built with **ASP.NET Core 9**, **E
 
   * Order placement
   * Order items linked to products
-  * Order status enum (Pending → Paid → Shipped → Delivered → Cancelled)
+  * Order status (Pending → Paid → Shipped → Delivered → Cancelled)
 * **Simple Fake Payment Flow** (sufficient for demo/portfolio)
 * **DTOs separated from Entities**
 * **Clean project structure**
