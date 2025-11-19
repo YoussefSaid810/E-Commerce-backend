@@ -54,6 +54,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton<IFileStorageService, LocalFileStorageService>();
+builder.Services.AddScoped<DatabaseSeeder>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -77,6 +78,17 @@ using (var scope = app.Services.CreateScope())
         adminUser = new ApplicationUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
         var createResult = await userManager.CreateAsync(adminUser, adminPassword);
         if (createResult.Succeeded) await userManager.AddToRoleAsync(adminUser, adminRole);
+    }
+    var services = scope.ServiceProvider;
+    try
+    {
+        var seeder = services.GetRequiredService<DatabaseSeeder>();
+        await seeder.MigrateAndSeedAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating/seeding the database.");
     }
 }
 
